@@ -27,7 +27,8 @@ model Restaurant {
 model MenuCategory {
   id           String     @id @default(uuid())
   name         String
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  // Se o restaurante sumir, a categoria some
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   restaurantId String
   products     Product[]
   createdAt    DateTime   @default(now())
@@ -41,9 +42,11 @@ model Product {
   price          Float
   imageUrl       String
   ingredients    String[]
-  restaurant     Restaurant     @relation(fields: [restaurantId], references: [id])
+  // Se o restaurante sumir, o produto some
+  restaurant     Restaurant     @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   restaurantId   String
-  menuCategory   MenuCategory   @relation(fields: [menuCategoryId], references: [id])
+  // Se a categoria sumir, o produto some
+  menuCategory   MenuCategory   @relation(fields: [menuCategoryId], references: [id], onDelete: Cascade)
   menuCategoryId String
   orderProducts  OrderProduct[]
   createdAt      DateTime       @default(now())
@@ -57,8 +60,8 @@ model Order {
   consumptionMethod ConsumptionMethod
   customerName      String?
   customerCpf       String?
-  // Relações
-  restaurant        Restaurant        @relation(fields: [restaurantId], references: [id])
+  // Se o restaurante sumir, o histórico de pedidos dele some
+  restaurant        Restaurant        @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   restaurantId      String
   orderProducts     OrderProduct[]
 
@@ -70,10 +73,11 @@ model OrderProduct {
   id        String  @id @default(uuid())
   quantity  Int
   price     Float
-  // Relações
-  order     Order   @relation(fields: [orderId], references: [id])
+  // Se o pedido principal for cancelado/deletado, os itens do carrinho somem
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId   Int
-  product   Product @relation(fields: [productId], references: [id])
+  // Mantido sem Cascade para proteger seu histórico de vendas caso o produto seja deletado do catálogo
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
   productId String
 
   createdAt DateTime @default(now())
